@@ -10,7 +10,7 @@
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
 
 // Variables
-int sampInt = 30000; //sample interval in milliseconds
+int sampInt = 15000; //sample interval in milliseconds
 int temperature;
 int targettemp = 70;
 int humidity;
@@ -55,6 +55,10 @@ void setup() {
 
   //DHT
   DHTnextSampleTime = 0;
+
+  //Start out with our relays turned on
+  digitalWrite(garageDoorRelay, HIGH);
+  digitalWrite(furnaceRelay, HIGH);
 }
 
 void dht_wrapper() {
@@ -63,10 +67,8 @@ void dht_wrapper() {
 
 void loop()
 {
-
-  //Start out with our relays turned on
-  digitalWrite(garageDoorRelay, HIGH);
-  digitalWrite(furnaceRelay, HIGH);
+  //Wait a bit between loops
+  delay(sampInt);
 
   // Check if we need to start the next sample
   if (millis() > DHTnextSampleTime) {
@@ -78,13 +80,13 @@ void loop()
     if (!DHT.acquiring()) {		// has sample completed?
 
       // get DHT status
-      int result = DHT.getStatus();
+      //int result = DHT.getStatus();
       int humidity = DHT.getHumidity();
       int tempf = DHT.getFahrenheit();
-      int tempc = DHT.getCelsius();
-      int tempk = DHT.getKelvin();
-      int dp = DHT.getDewPoint();
-      int dpslow = DHT.getDewPointSlow();
+      //int tempc = DHT.getCelsius();
+      //int tempk = DHT.getKelvin();
+      //int dp = DHT.getDewPoint();
+      //int dpslow = DHT.getDewPointSlow();
 
       //Turn the built in LED on to indicate publishing
       digitalWrite(blue, HIGH);
@@ -99,7 +101,7 @@ void loop()
       //Particle.publish("Dew Point", String(dpslow) + " %");
 
       //Turn the built in LED off indicate publishing finished
-      delay(sampInt);
+      delay(250);
       digitalWrite(blue, LOW);
 
       n++;  // increment counter
@@ -122,22 +124,44 @@ int garageDoor(String command)
   }
   else return -1;
 }
+int furnOnOff(String command)
+{
+  // look for the matching argument "activate"
+  if(command == "on")
+  {
+    // function to run
+    furnaceOn();
+    return 1;
+  }
+  if(command == "off")
+  {
+    // function to run
+    furnaceOff();
+    return 1;
+  }
+  return -1;
+}
+int setFurTemp(String command)
+{
+    return 1;
+}
 
-//Post helper functions
+// POST helper functions
 int activateGarageDoor() {
     digitalWrite(garageDoorRelay, LOW);
     delay(250);
     digitalWrite(garageDoorRelay, HIGH);
+    return 1;
 }
 
-int setFurnaceTemp(temp) {
-    if (temp) {
-    targettemp = temp;
-    }
+int setFurnaceTemp() {
+    return 1;
 }
 bool furnaceOn() {
     furnaceActive = true;
+    return 1;
 }
 bool furnaceOff() {
     furnaceActive = false;
+    return 1;
 }
