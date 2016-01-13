@@ -6,7 +6,7 @@ A small home automation project, basically a wifi-enabled thermostat and garage 
 * Particle Photon
 * DHT22 Temperature & Humidity Sensor
 * 2 channel relay module
-* uFL antennae
+* uFL antenna
 
 ### DHT22
 Configures a DHT22 humidity/temp sensor to work with a Particle Photon and publish readings to the Particle Dashboard.
@@ -28,7 +28,7 @@ Note: I did run into issues when trying to use D0 to connect to the DHT22 even t
 
 *info to be added*
 
-### Remote Antennae
+### Remote Antenna
 
 *info to be added*
 
