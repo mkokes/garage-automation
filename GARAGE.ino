@@ -10,15 +10,19 @@
 STARTUP(WiFi.selectAntenna(ANT_EXTERNAL));
 
 // Variables
-int sampInt = 15000; //sample interval in milliseconds
+int sampInt = 5000; //sample interval in milliseconds
+int tempf;
 int temperature;
-int targettemp = 70;
 int humidity;
+int targettemp = 70;
 int blue = D7;
 int garageDoorRelay = D5;
 int furnaceRelay = D6;
+
+// furnaceHeat shows whether the furnace is running or not and furnaceActive enables the furnace to run
+int furnaceHeat = 0;
 bool furnaceActive = false;
-bool furnaceHeat = false;
+
 
 //Post Function Declarations
 int garageDoor(String command);
@@ -67,8 +71,12 @@ void dht_wrapper() {
 
 void loop()
 {
-  //Wait a bit between loops
+  //Wait a bit between loops then grab the temperature
   delay(sampInt);
+  temperature = tempf;
+
+  // Turn the furnace on or off if necessary
+  heatGarage();
 
   // Check if we need to start the next sample
   if (millis() > DHTnextSampleTime) {
@@ -81,12 +89,13 @@ void loop()
 
       // get DHT status
       //int result = DHT.getStatus();
-      int humidity = DHT.getHumidity();
-      int tempf = DHT.getFahrenheit();
+      humidity = DHT.getHumidity();
+      tempf = DHT.getFahrenheit();
       //int tempc = DHT.getCelsius();
       //int tempk = DHT.getKelvin();
       //int dp = DHT.getDewPoint();
       //int dpslow = DHT.getDewPointSlow();
+
 
       //Turn the built in LED on to indicate publishing
       digitalWrite(blue, HIGH);
@@ -115,10 +124,8 @@ void loop()
 // These  function automagically get called upon a matching POST request
 int garageDoor(String command)
 {
-  // look for the matching argument "activate"
   if(command == "activate")
   {
-    // function to run
     activateGarageDoor();
     return 1;
   }
@@ -126,24 +133,24 @@ int garageDoor(String command)
 }
 int furnOnOff(String command)
 {
-  // look for the matching argument "activate"
-  if(command == "on")
-  {
-    // function to run
-    furnaceOn();
+  if (command == "on") {
+    //furnaceOn();
     return 1;
   }
-  if(command == "off")
-  {
-    // function to run
-    furnaceOff();
+  if(command == "off") {
+    //furnaceOff();
     return 1;
   }
   return -1;
 }
 int setFurTemp(String command)
 {
-    return 1;
+    if (command == "on") {
+        setFurnaceTemp();
+        return 1;
+    } else {
+        return -1;
+    }
 }
 
 // POST helper functions
@@ -153,15 +160,32 @@ int activateGarageDoor() {
     digitalWrite(garageDoorRelay, HIGH);
     return 1;
 }
-
+int heatGarage() {
+    if (targettemp >= temperature) {
+        if (furnaceActive = true) {
+            digitalWrite(furnaceRelay, LOW);
+            furnaceHeat = 1;
+            return 1;
+        } else {
+            digitalWrite(furnaceRelay, HIGH);
+            furnaceHeat = 0;
+            return -1;
+        }
+    } else {
+        digitalWrite(furnaceRelay, HIGH);
+        furnaceHeat = 0;
+        return -1;
+    }
+}
 int setFurnaceTemp() {
+    targettemp = 70;
     return 1;
 }
-bool furnaceOn() {
+int furnaceOn() {
     furnaceActive = true;
     return 1;
 }
-bool furnaceOff() {
+int furnaceOff() {
     furnaceActive = false;
     return 1;
 }
