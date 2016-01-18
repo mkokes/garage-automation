@@ -20,9 +20,9 @@ int furnaceRelay = D6;
 
 // furnaceHeat shows whether the furnace is running or not
 int furnaceHeat = 0;
+
 // furnaceActive enables the furnace to run
 bool furnaceActive = false;
-
 
 // Post Function Declarations
 int garageDoor(String command);
@@ -46,7 +46,7 @@ void setup() {
   pinMode(garageDoorRelay, OUTPUT);
   pinMode(furnaceRelay, OUTPUT);
 
-  // Variables Exposed to Cloud
+  // Variables exposed to cloud
   Particle.variable("temperature", tempf);
   Particle.variable("targettemp", targettemp);
   Particle.variable("humidity", humidity);
@@ -82,9 +82,6 @@ void loop() {
       humidity = DHT.getHumidity();
       tempf = DHT.getFahrenheit();
 
-      // Turn the furnace on or off if necessary
-      heatGarage();
-
       n++;  // increment counter
       bDHTstarted = false;  // reset the sample flag so we can take another
       DHTnextSampleTime = millis() + DHT_SAMPLE_INTERVAL;
@@ -92,7 +89,13 @@ void loop() {
   }
 
   if ( (millis() - lastPub) > pubDelay ) {
+    // Blink LED and publish to cloud
     blinkPub();
+
+    // Turn the furnace on or off if necessary
+    heatGarage();
+
+    // update lastPub variable
     lastPub = millis();
   }
 }
@@ -131,8 +134,8 @@ int furnOnOff(String command) {
   return -1;
 }
 int setFurTemp(String command) {
-  if (command == "on") {
-    setFurnaceTemp();
+  if (command.length() > 0) {
+    setFurnaceTemp(command);
     return 1;
   } else {
     return -1;
@@ -148,7 +151,7 @@ int activateGarageDoor() {
   return 1;
 }
 int heatGarage() {
-  if (furnaceActive) {
+  if (furnaceActive == true) {
     if (targettemp >= tempf) {
       digitalWrite(furnaceRelay, LOW);
       furnaceHeat = 1;
@@ -167,8 +170,8 @@ int heatGarage() {
     return -1;
   }
 }
-int setFurnaceTemp() {
-  targettemp = 60;
+int setFurnaceTemp(String command) {
+  targettemp = command.toInt();
   return 1;
 }
 int furnaceOn() {
