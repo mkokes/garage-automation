@@ -14,8 +14,12 @@ int pubDelay = 5000;  // How often to publish in milliseconds
 int tempf;
 int humidity;
 int targettemp = 60;
+int garageDoorPos = D4;
 int garageDoorRelay = D5;
 int furnaceRelay = D6;
+
+// garageOpen shows whether or not the garage door is in the open position
+int garageOpen;
 
 // furnaceHeat shows whether the furnace is running or not
 int furnaceHeat = 0;
@@ -41,6 +45,7 @@ int n;  // counter
 
 void setup() {
   // Hardware pin assignments
+  pinMode(garageDoorPos, INPUT);
   pinMode(garageDoorRelay, OUTPUT);
   pinMode(furnaceRelay, OUTPUT);
 
@@ -49,6 +54,7 @@ void setup() {
   Particle.variable("targettemp", targettemp);
   Particle.variable("humidity", humidity);
   Particle.variable("furnaceheat", furnaceHeat);
+  Particle.variable("garageopen", garageOpen);
 
   // Functions exposed to Cloud
   Particle.function("garagedoor", garageDoor);
@@ -67,6 +73,8 @@ void dht_wrapper() {
   DHT.isrCallback();
 }
 
+
+// START OF LOOP
 void loop() {
   // Check if we need to start the next sample
   if (millis() > DHTnextSampleTime) {
@@ -86,7 +94,7 @@ void loop() {
   }
 
   if ( (millis() - lastPub) > pubDelay ) {
-    // Blink LED and publish to cloud
+    // Publish to cloud
     pub();
 
     // Turn the furnace on or off if necessary
@@ -95,7 +103,16 @@ void loop() {
     // update lastPub variable
     lastPub = millis();
   }
+
+    // Check if the garage door is open
+   if (digitalRead(garageDoorPos) == LOW) {
+       garageOpen = 1;
+   } else {
+       garageOpen = 0;
+   }
+
 }
+// END OF LOOP
 
 int pub() {
 
