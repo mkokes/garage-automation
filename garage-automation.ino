@@ -14,7 +14,7 @@ int pubDelay = 5000;  // How often to publish in milliseconds
 int tempf;
 int humidity;
 int targettemp = 60;
-int garageDoorPos = D4;
+int garageDoorPos = D7;
 int garageDoorRelay = D5;
 int furnaceRelay = D6;
 
@@ -105,7 +105,7 @@ void loop() {
   }
 
     // Check if the garage door is open
-   if (digitalRead(garageDoorPos) == LOW) {
+   if (digitalRead(garageDoorPos) == HIGH) {
        garageOpen = 1;
    } else {
        garageOpen = 0;
